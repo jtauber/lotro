@@ -4,8 +4,8 @@ import sys
 
 from dat import DatFile
 
-## header
 
+## header
 
 def show_header(filename):
     f = DatFile(filename)
@@ -18,7 +18,7 @@ def show_header(filename):
     print("  Free Blocks: %08X blocks" % f.free_size)
 
 
-##
+## mainline
 
 def show_usage(argv0):
     print("%s header <filename>" % argv0)
