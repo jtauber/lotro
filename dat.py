@@ -2,7 +2,6 @@
 
 import os.path
 import struct
-import time
 
 from utils import dword, zeros
 
@@ -63,16 +62,18 @@ class Directory:
             if zeros(row):
                 break
             block_size, dir_offset = struct.unpack("<LL", row)
-            self.subdir_ptrs.append((i, block_size, dir_offset))
             assert block_size == self.dat_file.block_size
+            self.subdir_ptrs.append((i, block_size, dir_offset))
+        
+        self.count = struct.unpack("<L", f.read(4))[0]
         
         # files
         
         for i in range(59):  # 59?
-            f.seek(offset + (0x08 * 63) + (0x20 * i))
+            f.seek(offset + 0x04 + (0x08 * 63) + (0x20 * i))
             d = f.read(0x20)
             if len(d) != 0x20:  # @@@
                 break
-            unk1, unk2, file_id, offset, size1, timestamp, version, size2 = \
+            unk1, file_id, offset, size1, timestamp, version, size2, unk2 = \
                 struct.unpack("<LLLLLLLL", d)
-            self.file_ptrs.append((i, unk1, unk2, file_id, offset, size1, timestamp, version, size2))
+            self.file_ptrs.append((i, unk1, file_id, offset, size1, timestamp, version, size2, unk2))
