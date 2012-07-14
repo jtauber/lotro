@@ -1,3 +1,4 @@
+import struct
 import sys
 
 
@@ -45,3 +46,7 @@ def dump(bytes, cols=16, unprintable=".", print_all=False):
                 else:
                     sys.stdout.write(unprintable)
         sys.stdout.write("\n")
+
+
+def dword(buf, offset):
+    return struct.unpack("<L", buf[offset:offset + 4])[0]
