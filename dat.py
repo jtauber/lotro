@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import os.path
+import struct
+import time
 
-from utils import dword
+from utils import dword, zeros
 
 
 class DatFile:
@@ -29,3 +31,48 @@ class DatFile:
         self.directory_offset = dword(buf, 0x160)
         
         assert self.file_size == self.size
+
+    def directory(self, offset=None):
+        if offset is None:
+            offset = self.directory_offset
+        if offset in self.dir_cache:
+            return self.dir_cache[offset]
+        d = Directory(self, offset)
+        self.dir_cache[offset] = d
+        return d
+
+
+class Directory:
+    def __init__(self, dat_file, offset):
+        self.dat_file = dat_file
+        self.offset = offset
+        
+        self.subdir_ptrs = []
+        self.file_ptrs = []
+        
+        f = self.dat_file.stream
+        f.seek(offset)
+        row = f.read(0x08)
+        assert zeros(row)
+        
+        # sub-directories
+        
+        for i in range(62):
+            f.seek(offset + 0x08 + (0x08 * i))
+            row = f.read(0x08)
+            if zeros(row):
+                break
+            block_size, dir_offset = struct.unpack("<LL", row)
+            self.subdir_ptrs.append((i, block_size, dir_offset))
+            assert block_size == self.dat_file.block_size
+        
+        # files
+        
+        for i in range(59):  # 59?
+            f.seek(offset + (0x08 * 63) + (0x20 * i))
+            d = f.read(0x20)
+            if len(d) != 0x20:  # @@@
+                break
+            unk1, unk2, file_id, offset, size1, timestamp, version, size2 = \
+                struct.unpack("<LLLLLLLL", d)
+            self.file_ptrs.append((i, unk1, unk2, file_id, offset, size1, timestamp, version, size2))
