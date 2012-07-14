@@ -2,11 +2,11 @@ import struct
 import sys
 
 
-def assert_zero(s):
+def zeros(s):
     """
-    assert that the given string is all zeros
+    test whether the given string is all zeros
     """
-    assert s == "\0" * len(s)
+    return (s == "\0" * len(s))
 
 
 def printable(ch):
