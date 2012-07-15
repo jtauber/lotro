@@ -59,10 +59,14 @@ def show_directory(filename, offset=None):
     
     d = f.directory(offset)
     
-    for i, block_size, dir_offset in d.subdir_ptrs:
-        print "         %08X" % dir_offset
-        if i < d.count:
-            j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = d.file_ptrs[i]
+    if d.subdir_ptrs:
+        for i, block_size, dir_offset in d.subdir_ptrs:
+            print "         %08X" % dir_offset
+            if i < d.count:
+                j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = d.file_ptrs[i]
+                print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+    else:  # leaf
+        for j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 in d.file_ptrs:
             print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
 
 
@@ -79,12 +83,15 @@ def show_list(filename):
 def go_list(f, offset):
     d = f.directory(offset)
 
-    for i, block_size, dir_offset in d.subdir_ptrs:
-        go_list(f, dir_offset)
-        if i < d.count:
-            j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = d.file_ptrs[i]
+    if d.subdir_ptrs:
+        for i, block_size, dir_offset in d.subdir_ptrs:
+            go_list(f, dir_offset)
+            if i < d.count:
+                j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = d.file_ptrs[i]
+                print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+    else:  # leaf
+        for j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 in d.file_ptrs:
             print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
-
 
 ## mainline
 
