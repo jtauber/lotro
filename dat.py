@@ -56,21 +56,22 @@ class Directory:
         
         # sub-directories
         
+        f.seek(offset + 0x08)
         for i in range(62):
-            f.seek(offset + 0x08 + (0x08 * i))
             row = f.read(0x08)
-            if zeros(row):
-                break
             block_size, dir_offset = struct.unpack("<LL", row)
-            assert block_size == self.dat_file.block_size
+            if block_size == 0:
+                break
+            # assert block_size == self.dat_file.block_size
             self.subdir_ptrs.append((i, block_size, dir_offset))
         
+        f.seek(offset + (0x08 * 63))
         self.count = struct.unpack("<L", f.read(4))[0]
+        self.subdir_ptrs = self.subdir_ptrs[:self.count + 1]
         
         # files
         
-        for i in range(61):
-            f.seek(offset + 0x04 + (0x08 * 63) + (0x20 * i))
+        for i in range(self.count):
             d = f.read(0x20)
             unk1, file_id, file_offset, size1, timestamp, version, size2, unk2 = \
                 struct.unpack("<LLLLLLLL", d)
