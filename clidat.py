@@ -54,10 +54,7 @@ def show_directory(filename, offset=None):
     or the root directory if no offset given
     """
     f = DatFile(filename)
-    if offset is None:
-        offset = f.directory_offset
-    
-    d = f.directory(offset)
+    d = f.directory()
     
     if d.subdir_ptrs:
         for i, block_size, dir_offset in d.subdir_ptrs:
@@ -77,7 +74,7 @@ def show_list(filename):
     list all the files in the DAT
     """
     f = DatFile(filename)
-    go_list(f, f.directory_offset)
+    go_list(f, None)
 
 
 def go_list(f, offset):
@@ -92,6 +89,7 @@ def go_list(f, offset):
     else:  # leaf
         for j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 in d.file_ptrs:
             print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+
 
 ## mainline
 
