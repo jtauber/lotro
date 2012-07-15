@@ -22,8 +22,8 @@ def image_0x15(header_id, width, height, data):
             c1, c2, c3, c4 = map(ord, data[o:o + 4])
             pixels[(x, y)] = (c3, c2, c1)
             apixels[(x, y)] = (c4, c4, c4)
-    png.output_png("surface/%08X.png" % header_id, width, height, pixels)
-    png.output_png("surface/%08X_a.png" % header_id, width, height, apixels)
+    png.output_png("surface/%08X_015.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_015_a.png" % header_id, width, height, apixels)
 
 
 def image_0x14(header_id, width, height, data):
@@ -33,7 +33,7 @@ def image_0x14(header_id, width, height, data):
             o = (y * width + x) * 3
             c1, c2, c3 = map(ord, data[o:o + 3])
             pixels[(x, y)] = (c3, c2, c1)
-    png.output_png("surface/%08X.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_014.png" % header_id, width, height, pixels)
 
 
 def image_0x31545844(header_id, width, height, data):
@@ -89,7 +89,7 @@ def image_0x31545844(header_id, width, height, data):
                 elif b2 == 3:
                     pixels[(x, y)] = c3r, c3g, c3b
     
-    png.output_png("surface/%08X.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_DXT1.png" % header_id, width, height, pixels)
 
 
 def image_0x33545844(header_id, width, height, data):
@@ -138,7 +138,7 @@ def image_0x33545844(header_id, width, height, data):
                 elif b2 == 3:
                     pixels[(x, y)] = c3r, c3g, c3b
       
-    png.output_png("surface/%08X.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_DXT3.png" % header_id, width, height, pixels)
 
 
 def image_0x35545844(header_id, width, height, data):
@@ -187,7 +187,7 @@ def image_0x35545844(header_id, width, height, data):
                 elif b2 == 3:
                     pixels[(x, y)] = c3r, c3g, c3b
     
-    png.output_png("surface/%08X.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_DXT5.png" % header_id, width, height, pixels)
 
 
 def image_0x1C(header_id, width, height, data):
@@ -197,7 +197,7 @@ def image_0x1C(header_id, width, height, data):
             o = (y * width + x)
             c = ord(data[o])
             pixels[(x, y)] = (c, c, c)
-    png.output_png("surface/%08X.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_1C.png" % header_id, width, height, pixels)
 
 
 def image_0x1F4(header_id, data):
@@ -212,9 +212,6 @@ f = DatFile(filename)
 
 def dump_image_file(entry):
     j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
-    
-    if not (0x4100D000 <= file_id <= 0x4100DFFF):
-        return
     
     f.stream.seek(offset)
     j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
@@ -237,36 +234,28 @@ def dump_image_file(entry):
         assert lngth + 24 == size1
         content = data
         
-    print hex(file_id),
+    print hex(file_id)
     if unk2 == 0x15:
-        print "A1"
         assert width * height * 4 == lngth
         image_0x15(header_id, width, height, content[24:])
     elif unk2 == 0x14:
-        print "A2"
         assert width * height * 3 == lngth
         image_0x14(header_id, width, height, content[24:])
     elif unk2 == 0x31545844:  # DXT1
-        print "A3"
         assert width * height == lngth * 2
         image_0x31545844(header_id, width, height, content[24:])
     elif unk2 == 0x33545844:  # DXT3
-        print "A4"
         assert width * height == lngth
         image_0x33545844(header_id, width, height, content[24:])
     elif unk2 == 0x35545844:  # DXT5
-        print "A5"
         assert width * height == lngth
         image_0x35545844(header_id, width, height, content[24:])
     elif unk2 == 0x1C:
-        print "A6"
         assert width * height == lngth
         image_0x1C(header_id, width, height, content[24:])
     elif unk2 == 0x1F4:
-        print "A7"
         image_0x1F4(header_id, content[24:])
     else:
-        print "8"
         print "%08X %04X %04X" % (l, m, n)
         print "%08s %08s %08s %08s %08s %08s" % ("file_id", "unk1", "width", "height", "unk2", "lngth")
         print "%08X %08X %08X %08X %08X %08X" % (header_id, unk1, width, height, unk2, lngth)
