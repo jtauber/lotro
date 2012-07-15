@@ -66,26 +66,6 @@ def show_directory(filename, offset=None):
             print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
 
 
-## tree
-
-def show_tree(filename):
-    """
-    show the entire directory tree from the root
-    """
-    f = DatFile(filename)
-    
-    tree(f)
-
-
-def tree(f, offset=None, indent=0):
-    if offset is None:
-        offset = f.directory_offset
-    d = f.directory(offset)
-    for i, block_size, dir_offset in d.subdir_ptrs:
-        print "  " * indent, "%02X : %08X %08X" % (i, block_size, dir_offset)
-        tree(f, dir_offset, indent + 1)
-
-
 ## mainline
 
 def show_usage(argv0):
@@ -94,7 +74,6 @@ def show_usage(argv0):
     print("%s file_block <filename> <hex-offset>" % argv0)
     print("%s directory <filename>" % argv0)
     print("%s directory <filename> <hex-offset>" % argv0)
-    print("%s tree <filename>" % argv0)
 
 if len(sys.argv) < 3:
     show_usage(sys.argv[0])
@@ -121,8 +100,5 @@ else:
             show_directory(filename, offset)
         else:
             show_usage()
-    elif command == "tree":
-        filename = sys.argv[2]
-        show_tree(filename)
     else:
         show_usage(sys.argv[0])
