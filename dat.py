@@ -74,6 +74,6 @@ class Directory:
             d = f.read(0x20)
             if len(d) != 0x20:  # @@@
                 break
-            unk1, file_id, offset, size1, timestamp, version, size2, unk2 = \
+            unk1, file_id, file_offset, size1, timestamp, version, size2, unk2 = \
                 struct.unpack("<LLLLLLLL", d)
-            self.file_ptrs.append((i, unk1, file_id, offset, size1, timestamp, version, size2, unk2))
+            self.file_ptrs.append((i, unk1, file_id, file_offset, size1, timestamp, version, size2, unk2))
