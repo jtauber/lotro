@@ -4,7 +4,7 @@ import os.path
 import struct
 import time
 
-from utils import zeroes
+from utils import zeros
 
 
 filename = "LOTRO/client_sound.dat"
@@ -13,9 +13,9 @@ file_size = os.path.getsize(filename)
 with open(filename) as f:
     header = f.read(0x200)
     
-    assert zeroes(header[0x000:0x100])
+    assert zeros(header[0x000:0x100])
     assert header[0x100:0x104] == "\x00\x50\x4C\x00"
-    assert zeroes(header[0x104:0x140])
+    assert zeros(header[0x104:0x140])
     assert header[0x140:0x144] == "\x42\x54\x00\x00"
     a, size, c, part, e, zero, g, h = struct.unpack("<LLLLLLLL", header[0x144:0x164])
     # print "%30s %08X - %08X - %08X - %08X %08X" % (filename, a, c, e, g, h)
@@ -24,14 +24,14 @@ with open(filename) as f:
     assert part in [0, 1, 2]  # 1 or 2 if a two-parter otherwise 0 (local_English is 2)
     assert zero == 0
     
-    assert zeroes(header[0x164:0x170])
+    assert zeros(header[0x164:0x170])
     # @@@
-    assert zeroes(header[0x1A8:0x1FF])
+    assert zeros(header[0x1A8:0x1FF])
     
     def tree(start, indent=0):
         f.seek(start)
         row = f.read(0x08)
-        assert zeroes(row)
+        assert zeros(row)
         for i in range(0x3E):
             f.seek(start + 0x08 + (0x08 * i))
             row = f.read(0x08)
