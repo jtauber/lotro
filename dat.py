@@ -69,11 +69,10 @@ class Directory:
         
         # files
         
-        for i in range(59):  # 59?
+        for i in range(61):
             f.seek(offset + 0x04 + (0x08 * 63) + (0x20 * i))
             d = f.read(0x20)
-            if len(d) != 0x20:  # @@@
-                break
             unk1, file_id, file_offset, size1, timestamp, version, size2, unk2 = \
                 struct.unpack("<LLLLLLLL", d)
-            self.file_ptrs.append((i, unk1, file_id, file_offset, size1, timestamp, version, size2, unk2))
+            if size1 > 0:
+                self.file_ptrs.append((i, unk1, file_id, file_offset, size1, timestamp, version, size2, unk2))
