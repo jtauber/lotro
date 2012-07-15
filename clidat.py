@@ -48,6 +48,11 @@ def show_file_block(filename, offset):
 
 ## directory
 
+def print_entry(entry):
+    j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
+    print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+
+
 def show_directory(filename, offset=None):
     """
     show the directory at the given offset
@@ -60,19 +65,13 @@ def show_directory(filename, offset=None):
         for i, block_size, dir_offset in d.subdir_ptrs:
             print "         %08X" % dir_offset
             if i < d.count:
-                j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = d.file_ptrs[i]
-                print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+                print_entry(d.file_ptrs[i])
     else:  # leaf
-        for j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 in d.file_ptrs:
-            print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+        for entry in d.file_ptrs:
+            print_entry(entry)
 
 
 ## list
-
-def print_entry(entry):
-    j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
-    print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
-
 
 def show_list(filename):
     """
