@@ -3,9 +3,9 @@
 import os.path
 import png
 import struct
-import sys
-import time
 import zlib
+
+from dat import DatFile
 
 
 def rgb565(c):
@@ -13,47 +13,17 @@ def rgb565(c):
     return r * 8, g * 4, b * 8
 
 
-def assert_zero(s):
-    assert s == "\0" * len(s)
-
-
-def printable(byte):
-    if 0x20 <= ord(byte) < 0x7F:
-        return True
-    else:
-        return False
-
-
-def dump(bytes, cols=16, unprintable=".", print_all=False):
-    
-    rows, last_row = divmod(len(bytes), cols)
-    
-    for row in range(rows + 1):
-        for i in range(last_row if row == rows else cols):
-            byte = bytes[cols * row + i]
-            sys.stdout.write("%02X " % ord(byte))
-        if row == rows:
-            sys.stdout.write("   " * (cols - last_row))
-        for i in range(last_row if row == rows else cols):
-            byte = bytes[cols * row + i]
-            if print_all:
-                sys.stdout.write(chr(0x20 + ((ord(byte) - 0x20) % 0x5F)))
-            else:
-                if printable(byte):
-                    sys.stdout.write(byte)
-                else:
-                    sys.stdout.write(unprintable)
-        sys.stdout.write("\n")
-
-
 def image_0x15(header_id, width, height, data):
     pixels = {}
+    apixels = {}
     for y in range(height):
         for x in range(width):
             o = (y * width + x) * 4
             c1, c2, c3, c4 = map(ord, data[o:o + 4])
             pixels[(x, y)] = (c3, c2, c1)
+            apixels[(x, y)] = (c4, c4, c4)
     png.output_png("surface/%08X.png" % header_id, width, height, pixels)
+    png.output_png("surface/%08X_a.png" % header_id, width, height, apixels)
 
 
 def image_0x14(header_id, width, height, data):
@@ -72,7 +42,7 @@ def image_0x31545844(header_id, width, height, data):
     lngth = width * height // 2
     for bb in range(lngth // 8):
         o = bb * 8
-        blk = map(ord, data[o:o+8])
+        blk = map(ord, data[o:o + 8])
         
         c0 = blk[1] * 256 + blk[0]
         c1 = blk[3] * 256 + blk[2]
@@ -81,19 +51,19 @@ def image_0x31545844(header_id, width, height, data):
         c1r, c1g, c1b = rgb565(c1)
         
         if c0 > c1:
-            c2r = (2 * c0r +     c1r) // 3
-            c2g = (2 * c0g +     c1g) // 3
-            c2b = (2 * c0b +     c1b) // 3
-            c3r = (    c0r + 2 * c1r) // 3
-            c3g = (    c0g + 2 * c1g) // 3
-            c3b = (    c0b + 2 * c1b) // 3
+            c2r = (2 * c0r + 1 * c1r) // 3
+            c2g = (2 * c0g + 1 * c1g) // 3
+            c2b = (2 * c0b + 1 * c1b) // 3
+            c3r = (1 * c0r + 2 * c1r) // 3
+            c3g = (1 * c0g + 2 * c1g) // 3
+            c3b = (1 * c0b + 2 * c1b) // 3
         else:
-            c2r = (    c0r +     c1r) // 2
-            c2g = (    c0g +     c1g) // 2
-            c2b = (    c0b +     c1b) // 2
-            c3r = 0 # @@@
-            c3g = 0 # @@@
-            c3b = 0 # @@@
+            c2r = (1 * c0r + 1 * c1r) // 2
+            c2g = (1 * c0g + 1 * c1g) // 2
+            c2b = (1 * c0b + 1 * c1b) // 2
+            c3r = 0  # @@@
+            c3g = 0  # @@@
+            c3b = 0  # @@@
         
         for i in range(4):
             for j in range(4):
@@ -129,7 +99,7 @@ def image_0x33545844(header_id, width, height, data):
     for bb in range(lngth // 16):
         o = bb * 16
         # ignore alpha for now
-        blk = map(ord, data[o+8:o+16])
+        blk = map(ord, data[o + 8:o + 16])
         
         c0 = blk[1] * 256 + blk[0]
         c1 = blk[3] * 256 + blk[2]
@@ -137,12 +107,12 @@ def image_0x33545844(header_id, width, height, data):
         c0r, c0g, c0b = rgb565(c0)
         c1r, c1g, c1b = rgb565(c1)
         
-        c2r = (2 * c0r +     c1r) // 3
-        c2g = (2 * c0g +     c1g) // 3
-        c2b = (2 * c0b +     c1b) // 3
-        c3r = (    c0r + 2 * c1r) // 3
-        c3g = (    c0g + 2 * c1g) // 3
-        c3b = (    c0b + 2 * c1b) // 3
+        c2r = (2 * c0r + 1 * c1r) // 3
+        c2g = (2 * c0g + 1 * c1g) // 3
+        c2b = (2 * c0b + 1 * c1b) // 3
+        c3r = (1 * c0r + 2 * c1r) // 3
+        c3g = (1 * c0g + 2 * c1g) // 3
+        c3b = (1 * c0b + 2 * c1b) // 3
         
         for i in range(4):
             for j in range(4):
@@ -178,7 +148,7 @@ def image_0x35545844(header_id, width, height, data):
     for bb in range(lngth // 16):
         o = bb * 16
         # ignore alpha for now
-        blk = map(ord, data[o+8:o+16])
+        blk = map(ord, data[o + 8:o + 16])
         
         c0 = blk[1] * 256 + blk[0]
         c1 = blk[3] * 256 + blk[2]
@@ -186,12 +156,12 @@ def image_0x35545844(header_id, width, height, data):
         c0r, c0g, c0b = rgb565(c0)
         c1r, c1g, c1b = rgb565(c1)
         
-        c2r = (2 * c0r +     c1r) // 3
-        c2g = (2 * c0g +     c1g) // 3
-        c2b = (2 * c0b +     c1b) // 3
-        c3r = (    c0r + 2 * c1r) // 3
-        c3g = (    c0g + 2 * c1g) // 3
-        c3b = (    c0b + 2 * c1b) // 3
+        c2r = (2 * c0r + 1 * c1r) // 3
+        c2g = (2 * c0g + 1 * c1g) // 3
+        c2b = (2 * c0b + 1 * c1b) // 3
+        c3r = (1 * c0r + 2 * c1r) // 3
+        c3g = (1 * c0g + 2 * c1g) // 3
+        c3b = (1 * c0b + 2 * c1b) // 3
         
         for i in range(4):
             for j in range(4):
@@ -237,118 +207,70 @@ def image_0x1F4(header_id, data):
 
 filename = "LOTRO/client_surface.dat"
 
-file_size = os.path.getsize(filename)
-with open(filename) as f:
-    header = f.read(0x200)
+f = DatFile(filename)
+
+
+def dump_image_file(entry):
+    j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
     
-    assert_zero(header[0x000:0x100])
-    assert header[0x100:0x104] == "\x00\x50\x4C\x00"
-    assert_zero(header[0x104:0x140])
-    assert header[0x140:0x144] == "\x42\x54\x00\x00"
-    a, size, c, part, e, zero, g, h = struct.unpack("<LLLLLLLL", header[0x144:0x164])
-    # print "%30s %08X - %08X - %08X - %08X %08X" % (filename, a, c, e, g, h)
+    if not (0x4100D000 <= file_id <= 0x4100DFFF):
+        return
     
-    assert file_size == size
-    assert part in [0, 1, 2] # 1 or 2 if a two-parter otherwise 0 (local_English is 2)
-    assert zero == 0
+    f.stream.seek(offset)
+    j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
     
-    assert_zero(header[0x164:0x170])
-    # @@@
-    assert_zero(header[0x1A8:0x1FF])
+    assert j == 0
+    assert k == 0
     
-    def tree(start, indent=0):
-        f.seek(start)
-        row = f.read(0x08)
-        x, y = struct.unpack("<LL", row)
-        if x != 0 and y != 0:
-            return
-        for i in range(0x3E):
-            f.seek(start + 0x08 + (0x08 * i))
-            row = f.read(0x08)
-            x, y = struct.unpack("<LL", row)
-            # print "  " * indent + "%08X %08X" % (x, y)
-            if x == a and y != 0:
-                tree(y, indent + 1)
-        for i in range(0x3B):
-            f.seek(start + 0x08 + (0x08 * 0x3E) + (0x20 * i))
-            # version is of dat file (or game) not individual file
-            unk1, unk2, file_id, offset, size1, timestamp, version, size2 = struct.unpack("<LLLLLLLL", f.read(0x20))
-            if 0 < file_id < 0xFFFF0000:
-                # print
-                # print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X |" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, offset + size2),
-                f.seek(offset)
-                j, k, l, m, n = struct.unpack("<LLLHH", f.read(0x10))
-                assert j == 0
-                assert k == 0 
-                # print "%08X %04X %04X" % (l, m, n),
-                # print
-                if m == 0xDA78:
-                    f.seek(offset)
-                    data = f.read(size1 + 0x08)[12:]
-                    content = zlib.decompress(data)
-                    assert l == len(content)
-                    header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", content[:24])
-                    assert lngth + 24 == l
-                    # print "%08s %08s %08s %08s %08s %08s" % ("file_id", "unk1", "width", "height", "unk2", "lngth")
-                    # print "%08X %08X %08X %08X %08X %08X" % (header_id, unk1, width, height, unk2, lngth)
-                    if unk2 == 0x15:
-                        assert width * height * 4 == lngth
-                        image_0x15(header_id, width, height, content[24:])
-                    elif unk2 == 0x14:
-                        assert width * height * 3 == lngth
-                        image_0x14(header_id, width, height, content[24:])
-                    elif unk2 == 0x31545844: # DXT1
-                        assert width * height == lngth * 2
-                        image_0x31545844(header_id, width, height, content[24:])
-                    elif unk2 == 0x33545844: # DXT3
-                        assert width * height == lngth
-                        image_0x33545844(header_id, width, height, content[24:])
-                    elif unk2 == 0x35545844: # DXT5
-                        assert width * height == lngth
-                        image_0x35545844(header_id, width, height, content[24:])
-                    elif unk2 == 0x1C:
-                        assert width * height == lngth
-                        image_0x1C(header_id, width, height, content[24:])
-                    elif unk2 == 0x1F4:
-                        pass
-                        image_0x1F4(header_id, content[24:])
-                    else:
-                        print "%08X %04X %04X" % (l, m, n)
-                        print "%08s %08s %08s %08s %08s %08s" % ("file_id", "unk1", "width", "height", "unk2", "lngth")
-                        print "%08X %08X %08X %08X %08X %08X" % (header_id, unk1, width, height, unk2, lngth)
-                        dump(content[24:])
-                else:
-                    f.seek(offset)
-                    data = f.read(size1 + 0x08)[8:]
-                    header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", data[:24])
-                    assert lngth + 24 == size1
-                    # print "%08s %08s %08s %08s %08s %08s" % ("file_id", "unk1", "width", "height", "unk2", "lngth")
-                    # print "%08X %08X %08X %08X %08X %08X" % (header_id, unk1, width, height, unk2, lngth)
-                    if unk2 == 0x15:
-                        assert width * height * 4 == lngth
-                        image_0x15(header_id, width, height, data[24:])
-                    elif unk2 == 0x14:
-                        assert width * height * 3 == lngth
-                        image_0x14(header_id, width, height, data[24:])
-                    elif unk2 == 0x31545844: # DXT1
-                        assert width * height == lngth * 2
-                        image_0x31545844(header_id, width, height, data[24:])
-                    elif unk2 == 0x33545844: # DXT3
-                        assert width * height == lngth
-                        image_0x33545844(header_id, width, height, data[24:])
-                    elif unk2 == 0x35545844: # DXT5
-                        assert width * height == lngth
-                        image_0x35545844(header_id, width, height, data[24:])
-                    elif unk2 == 0x1C:
-                        assert width * height == lngth
-                        image_0x1C(header_id, width, height, data[24:])
-                    elif unk2 == 0x1F4:
-                        pass
-                        # @@@
-                        image_0x1F4(header_id, data[24:])
-                    else:
-                        print "%08X %04X %04X" % (l, m, n)
-                        print "%08s %08s %08s %08s %08s %08s" % ("file_id", "unk1", "width", "height", "unk2", "lngth")
-                        print "%08X %08X %08X %08X %08X %08X" % (header_id, unk1, width, height, unk2, lngth)
-                        dump(data[24:])
-    tree(h)
+    if m == 0xDA78:
+        f.stream.seek(offset)
+        data = f.stream.read(size1 + 0x08)[12:]
+        content = zlib.decompress(data)
+        assert l == len(content)
+        header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", content[:24])
+        assert lngth + 24 == l
+    else:
+        f.stream.seek(offset)
+        f.stream.seek(offset)
+        data = f.stream.read(size1 + 0x08)[8:]
+        header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", data[:24])
+        assert lngth + 24 == size1
+        content = data
+        
+    print hex(file_id),
+    if unk2 == 0x15:
+        print "A1"
+        assert width * height * 4 == lngth
+        image_0x15(header_id, width, height, content[24:])
+    elif unk2 == 0x14:
+        print "A2"
+        assert width * height * 3 == lngth
+        image_0x14(header_id, width, height, content[24:])
+    elif unk2 == 0x31545844:  # DXT1
+        print "A3"
+        assert width * height == lngth * 2
+        image_0x31545844(header_id, width, height, content[24:])
+    elif unk2 == 0x33545844:  # DXT3
+        print "A4"
+        assert width * height == lngth
+        image_0x33545844(header_id, width, height, content[24:])
+    elif unk2 == 0x35545844:  # DXT5
+        print "A5"
+        assert width * height == lngth
+        image_0x35545844(header_id, width, height, content[24:])
+    elif unk2 == 0x1C:
+        print "A6"
+        assert width * height == lngth
+        image_0x1C(header_id, width, height, content[24:])
+    elif unk2 == 0x1F4:
+        print "A7"
+        image_0x1F4(header_id, content[24:])
+    else:
+        print "8"
+        print "%08X %04X %04X" % (l, m, n)
+        print "%08s %08s %08s %08s %08s %08s" % ("file_id", "unk1", "width", "height", "unk2", "lngth")
+        print "%08X %08X %08X %08X %08X %08X" % (header_id, unk1, width, height, unk2, lngth)
+        dump(content[24:])
+
+
+f.visit_file_entries(dump_image_file)
