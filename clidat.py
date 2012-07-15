@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import struct
 import sys
 import time
 
 from dat import DatFile
+from utils import dump
 
 
 ## header
@@ -19,6 +21,31 @@ def show_header(filename):
     print("  Free Blocks: %08X blocks" % f.free_size)
 
 
+## block
+
+def show_block(filename, offset):
+    f = DatFile(filename)
+    f.stream.seek(offset)
+    block_data = f.stream.read(f.block_size)
+    dump(block_data)
+    print "---"
+    dump(f.stream.read(0x40))
+
+
+## file_block
+
+def show_file_block(filename, offset):
+    f = DatFile(filename)
+    f.stream.seek(offset)
+    block_data = f.stream.read(f.block_size)
+    zero1, zero2, file_id, size = struct.unpack("<LLLL", block_data[:0x10])
+    assert zero1 == 0
+    assert zero2 == 0
+    print("%08X %08X" % (file_id, size))
+    file_data = f.stream.read(size)
+    dump(file_data[0x10:])
+
+
 ## directory
 
 def show_directory(filename, offset=None):
@@ -31,11 +58,15 @@ def show_directory(filename, offset=None):
         offset = f.directory_offset
     
     d = f.directory(offset)
+    print "     block_size  offset"
+    print "-------------------------"
     for i, block_size, dir_offset in d.subdir_ptrs:
-        print "%02X : %08X %08X" % (i, block_size, dir_offset)
+        print "%02X : %08X    %08X" % (i, block_size, dir_offset)
     print "%2X" % d.count
+    print "     file_id  offset   size1    timestamp                version  | size2    unk1     unk2"
+    print "---------------------------------------------------------------------------------------------------------"
     for i, unk1, file_id, offset, size1, timestamp, version, size2, unk2 in d.file_ptrs:
-        print "%02X : %08X %08X %08X %s %08X | %08X %08X %08X | %08X |" % (i, file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+        print "%02X : %08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (i, file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
 
 
 ## tree
@@ -62,6 +93,8 @@ def tree(f, offset=None, indent=0):
 
 def show_usage(argv0):
     print("%s header <filename>" % argv0)
+    print("%s block <filename> <hex-offset>" % argv0)
+    print("%s file_block <filename> <hex-offset>" % argv0)
     print("%s directory <filename>" % argv0)
     print("%s directory <filename> <hex-offset>" % argv0)
     print("%s tree <filename>" % argv0)
@@ -73,6 +106,14 @@ else:
     if command == "header":
         filename = sys.argv[2]
         show_header(filename)
+    elif command == "block":
+        filename = sys.argv[2]
+        offset = int(sys.argv[3], 16)
+        show_block(filename, offset)
+    elif command == "file_block":
+        filename = sys.argv[2]
+        offset = int(sys.argv[3], 16)
+        show_file_block(filename, offset)
     elif command == "directory":
         if len(sys.argv) == 3:
             filename = sys.argv[2]
