@@ -39,6 +39,17 @@ class DatFile:
         d = Directory(self, offset)
         self.dir_cache[offset] = d
         return d
+    
+    def visit_file_entries(self, visitor, offset=None):
+        d = self.directory(offset)
+        if d.subdir_ptrs:
+            for i, block_size, dir_offset in d.subdir_ptrs:
+                self.visit_file_entries(visitor, dir_offset)
+                if i < d.count:
+                    visitor(d.file_ptrs[i])
+        else:  # leaf
+            for file_entry in d.file_ptrs:
+                visitor(file_entry)
 
 
 class Directory:
