@@ -58,15 +58,12 @@ def show_directory(filename, offset=None):
         offset = f.directory_offset
     
     d = f.directory(offset)
-    print "     block_size  offset"
-    print "-------------------------"
+    
     for i, block_size, dir_offset in d.subdir_ptrs:
-        print "%02X : %08X    %08X" % (i, block_size, dir_offset)
-    print "%2X" % d.count
-    print "     file_id  offset   size1    timestamp                version  | size2    unk1     unk2"
-    print "---------------------------------------------------------------------------------------------------------"
-    for i, unk1, file_id, offset, size1, timestamp, version, size2, unk2 in d.file_ptrs:
-        print "%02X : %08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (i, file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
+        print "         %08X" % dir_offset
+        if i < d.count:
+            j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = d.file_ptrs[i]
+            print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
 
 
 ## tree
