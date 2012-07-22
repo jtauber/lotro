@@ -220,6 +220,7 @@ def dump_image_file(entry):
     assert k == 0
     
     if m == 0xDA78:
+        assert unk1 % 0x100 == 0x03
         f.stream.seek(offset)
         data = f.stream.read(size1 + 0x08)[12:]
         content = zlib.decompress(data)
@@ -227,6 +228,7 @@ def dump_image_file(entry):
         header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", content[:24])
         assert lngth + 24 == l
     else:
+        assert unk1 % 0x100 == 0x02
         f.stream.seek(offset)
         data = f.stream.read(size1 + 0x08)[8:]
         header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", data[:24])
