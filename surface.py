@@ -228,7 +228,6 @@ def dump_image_file(entry):
         assert lngth + 24 == l
     else:
         f.stream.seek(offset)
-        f.stream.seek(offset)
         data = f.stream.read(size1 + 0x08)[8:]
         header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", data[:24])
         assert lngth + 24 == size1
