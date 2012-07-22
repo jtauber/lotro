@@ -26,13 +26,15 @@ def dump_anim_file(entry):
     assert k == 0
     
     if m == 0xDA78:
+        print "compressed"
+        assert unk1 % 0x100 == 0x03
         f.stream.seek(offset)
         data = f.stream.read(size1 + 0x08)[12:]
         content = zlib.decompress(data)
         assert l == len(content)
-        print "compressed"
     else:
         print "uncompressed"
+        assert unk1 % 0x100 == 0x02
         f.stream.seek(offset)
         data = f.stream.read(size1 + 0x08)[8:]
         content = data
