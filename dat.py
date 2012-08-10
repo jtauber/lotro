@@ -40,6 +40,22 @@ class DatFile:
         self.dir_cache[offset] = d
         return d
     
+    def find_file(self, target_id, directory_offset=None):
+        d = self.directory(directory_offset)
+        l = 0
+        u = d.count - 1
+        while l <= u:
+            p = (l + u) / 2
+            entry = d.file_ptrs[p]
+            if entry[2] < target_id:
+                l = p + 1
+            elif entry[2] > target_id:
+                u = p - 1
+            else:  # found file
+                return d.file_ptrs[p]
+        subdir_offset = d.subdir_ptrs[l][2]
+        return self.find_file(target_id, subdir_offset)
+    
     def visit_file_entries(self, visitor, offset=None):
         d = self.directory(offset)
         if d.subdir_ptrs:

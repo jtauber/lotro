@@ -81,6 +81,16 @@ def show_list(filename):
     f.visit_file_entries(print_entry)
 
 
+## fine_file
+
+def show_find_file(filename, file_id):
+    """
+    find the directory entry for the file with the given id
+    """
+    f = DatFile(filename)
+    print_entry(f.find_file(file_id))
+
+
 ## mainline
 
 def show_usage(argv0):
@@ -90,6 +100,7 @@ def show_usage(argv0):
     print("%s directory <filename>" % argv0)
     print("%s directory <filename> <hex-offset>" % argv0)
     print("%s list <filename>" % argv0)
+    print("%s find_file <filename> <file-id>" % argv0)
 
 if len(sys.argv) < 3:
     show_usage(sys.argv[0])
@@ -119,5 +130,9 @@ else:
     elif command == "list":
         filename = sys.argv[2]
         show_list(filename)
+    elif command == "find_file":
+        filename = sys.argv[2]
+        file_id = int(sys.argv[3], 16)
+        show_find_file(filename, file_id)
     else:
         show_usage(sys.argv[0])
