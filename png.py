@@ -17,7 +17,7 @@ def get_data(width, height, pixels):
     for y in range(height):
         data.append(0)
         for x in range(width):
-            r, g, b = pixels.get((x, y), (0, 0, 0))
+            r, g, b = pixels[x, y]
             data.extend([r, g, b])
     compressed = compressor.compress(data.tostring())
     flushed = compressor.flush()
