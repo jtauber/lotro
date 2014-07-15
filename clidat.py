@@ -60,7 +60,7 @@ def show_directory(filename, offset=None):
     """
     f = DatFile(filename)
     d = f.directory()
-    
+
     if d.subdir_ptrs:
         for i, block_size, dir_offset in d.subdir_ptrs:
             print "         %08X" % dir_offset

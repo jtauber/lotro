@@ -19,11 +19,11 @@ def heights(entry):
     j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
 
     f.stream.seek(offset)
-    
+
     j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
-    
+
     assert k == 0
-    
+
     if m == 0xDA78:
         assert unk1 % 0x100 == 0x03
         f.stream.seek(offset)
@@ -43,7 +43,7 @@ def heights(entry):
             content = data
         else:
             return zeros((32, 32), dtype=uint16)
-    
+
     header_id, unk1, unk2, unk3 = struct.unpack("<LLLL", content[:0x10])
     # print "%08X %08X %08X %08X" % (header_id, unk1, unk2, unk3)
     assert header_id == file_id
@@ -51,7 +51,7 @@ def heights(entry):
         assert unk1 == 0x00200000 + header_id
     assert unk2 == 0x00000000
     assert unk3 == 0x00000441
-    
+
     # len(content) may or may not be 0x1168 but we'll grab first 0x882 either way
     data = content[0x10:0x10 + (0x441 * 2)]
     height_map = zeros((32, 32), dtype=uint16)
@@ -63,7 +63,7 @@ def heights(entry):
             else:
                 h = 0  # @@@
             height_map[y, x] = h
-    
+
     return height_map
 
 
@@ -97,31 +97,31 @@ def heights(entry):
 
 def hillshade(cell, xres=1, yres=1, azimuth=315.0, altitude=45.0, z=1.0, scale=0.5):
     window = []
-    
+
     for row in range(3):
         for col in range(3):
             window.append(cell[row:(row + cell.shape[0] - 2), col:(col + cell.shape[1] - 2)])
-    
+
     x = ((z * window[0] + z * window[3] + z * window[3] + z * window[6]) \
        - (z * window[2] + z * window[5] + z * window[5] + z * window[8])) \
       / (8.0 * xres * scale)
-    
+
     y = ((z * window[6] + z * window[7] + z * window[7] + z * window[8]) \
        - (z * window[0] + z * window[1] + z * window[1] + z * window[2])) \
       / (8.0 * yres * scale)
-    
+
     rad2deg = 180.0 / math.pi
-    
+
     slope = 90.0 - arctan(sqrt(x * x + y * y)) * rad2deg
     aspect = arctan2(x, y)
     deg2rad = math.pi / 180.0
-    
+
     shaded = sin(altitude * deg2rad) * sin(slope * deg2rad) \
            + cos(altitude * deg2rad) * cos(slope * deg2rad) \
            * cos((azimuth - 90.0) * deg2rad - aspect)
-    
+
     shaded = shaded * 255
-    
+
     return shaded
 
 
@@ -156,7 +156,7 @@ colour_map = [
 def colour_for_height(height):
     lbound = 0
     lcolor = (0, 0, 0)
-    
+
     for ubound, ucolor in colour_map:
         if height < ubound:
             return interpolate(height, lbound, ubound, lcolor, ucolor)

@@ -22,14 +22,14 @@ def printable(ch):
 def dump(bytes, cols=16, unprintable=".", print_all=False):
     """
     write out a hexdump of the given bytes to stdout
-    
+
     cols - how many bytes to a row to display
     unprintable - what to replace unprintable characters with
     print_all - whether to force unprintable characters into a printable range
     """
-    
+
     rows, last_row = divmod(len(bytes), cols)
-    
+
     for row in range(rows + 1):
         for i in range(last_row if row == rows else cols):
             byte = bytes[cols * row + i]

@@ -34,16 +34,16 @@ def image_0x1F4(header_id, data):
 
 def dump_local_file(entry):
     j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
-    
+
     # print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
 
     f.stream.seek(offset)
-    
+
     j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
     # print "%08X %08X %08X %04X %04X" % (j, k, l, m, n)
-    
+
     assert k == 0
-    
+
     if j == 0:
         if m == 0xDA78:
             # print "compressed"
@@ -58,7 +58,7 @@ def dump_local_file(entry):
             f.stream.seek(offset)
             data = f.stream.read(size1 + 0x08)[8:]
             content = data
-        
+
         # print "%08X %08X" % struct.unpack("<LL", content[:8]),
         magic = content[8:12]
         if magic == "OggS":
@@ -74,7 +74,7 @@ def dump_local_file(entry):
                     print "%08X %08X %08X %08X %08X %08X" % struct.unpack("<LLLLLL", content[:24])
                     assert width * height * 4 == lngth
                     image_0x15(header_id, width, height, content[24:])
-                    
+
     else:
         pass
 

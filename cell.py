@@ -26,14 +26,14 @@ def dump_cell_file(entry):
         pass
     elif 0x80010000 <= file_id <= 0x8001FFFF or 0x80020000 <= file_id <= 0x8002FFFF:
         # print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
-        
+
         f.stream.seek(offset)
-        
+
         j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
         # print "%08X %08X %08X %04X %04X" % (j, k, l, m, n)
-        
+
         assert k == 0
-        
+
         if j == 0:
             if m == 0xDA78:
                 # print "compressed"
@@ -48,7 +48,7 @@ def dump_cell_file(entry):
                 f.stream.seek(offset)
                 data = f.stream.read(size1 + 0x08)[8:]
                 content = data
-            
+
             header_id, unk1, unk2, unk3 = struct.unpack("<LLLL", content[:0x10])
             print "%08X %08X %08X %08X" % (header_id, unk1, unk2, unk3)
             assert header_id == file_id
@@ -56,7 +56,7 @@ def dump_cell_file(entry):
                 assert unk1 == 0x00200000 + header_id
             assert unk2 == 0x00000000
             assert unk3 == 0x00000441
-            
+
             if len(content) == 0x1168:
                 data = content[0x10:0x10 + (0x441 * 2)]
                 pixels = {}
@@ -95,7 +95,7 @@ def dump_cell_file(entry):
                 f.stream.seek(offset)
                 data = f.stream.read(size1 + 0x08)[8:]
                 content = data
-            
+
             header_id, unk1, unk2, unk3 = struct.unpack("<LLLL", content[:0x10])
             print "%08X %08X %08X %08X" % (header_id, unk1, unk2, unk3)
             assert header_id == file_id

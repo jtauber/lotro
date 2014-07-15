@@ -38,18 +38,18 @@ def image_0x14(header_id, width, height, data):
 
 def image_0x31545844(header_id, width, height, data):
     pixels = {}
-    
+
     lngth = width * height // 2
     for bb in range(lngth // 8):
         o = bb * 8
         blk = map(ord, data[o:o + 8])
-        
+
         c0 = blk[1] * 256 + blk[0]
         c1 = blk[3] * 256 + blk[2]
-        
+
         c0r, c0g, c0b = rgb565(c0)
         c1r, c1g, c1b = rgb565(c1)
-        
+
         if c0 > c1:
             c2r = (2 * c0r + 1 * c1r) // 3
             c2g = (2 * c0g + 1 * c1g) // 3
@@ -64,7 +64,7 @@ def image_0x31545844(header_id, width, height, data):
             c3r = 0  # @@@
             c3g = 0  # @@@
             c3b = 0  # @@@
-        
+
         for i in range(4):
             for j in range(4):
                 b = blk[4 + i]
@@ -76,10 +76,10 @@ def image_0x31545844(header_id, width, height, data):
                     b2 = (b // 16) % 4
                 elif j == 3:
                     b2 = (b // 64) % 4
-                
+
                 x = (bb % (width // 4)) * 4 + j
                 y = (bb // (width // 4)) * 4 + i
-                
+
                 if b2 == 0:
                     pixels[(x, y)] = c0r, c0g, c0b
                 elif b2 == 1:
@@ -88,32 +88,32 @@ def image_0x31545844(header_id, width, height, data):
                     pixels[(x, y)] = c2r, c2g, c2b
                 elif b2 == 3:
                     pixels[(x, y)] = c3r, c3g, c3b
-    
+
     png.output_png("surface/%08X_DXT1.png" % header_id, width, height, pixels)
 
 
 def image_0x33545844(header_id, width, height, data):
     pixels = {}
-      
+
     lngth = width * height
     for bb in range(lngth // 16):
         o = bb * 16
         # ignore alpha for now
         blk = map(ord, data[o + 8:o + 16])
-        
+
         c0 = blk[1] * 256 + blk[0]
         c1 = blk[3] * 256 + blk[2]
-        
+
         c0r, c0g, c0b = rgb565(c0)
         c1r, c1g, c1b = rgb565(c1)
-        
+
         c2r = (2 * c0r + 1 * c1r) // 3
         c2g = (2 * c0g + 1 * c1g) // 3
         c2b = (2 * c0b + 1 * c1b) // 3
         c3r = (1 * c0r + 2 * c1r) // 3
         c3g = (1 * c0g + 2 * c1g) // 3
         c3b = (1 * c0b + 2 * c1b) // 3
-        
+
         for i in range(4):
             for j in range(4):
                 b = blk[4 + i]
@@ -125,10 +125,10 @@ def image_0x33545844(header_id, width, height, data):
                     b2 = (b // 16) % 4
                 elif j == 3:
                     b2 = (b // 64) % 4
-                
+
                 x = (bb % (width // 4)) * 4 + j
                 y = (bb // (width // 4)) * 4 + i
-                
+
                 if b2 == 0:
                     pixels[(x, y)] = c0r, c0g, c0b
                 elif b2 == 1:
@@ -137,32 +137,32 @@ def image_0x33545844(header_id, width, height, data):
                     pixels[(x, y)] = c2r, c2g, c2b
                 elif b2 == 3:
                     pixels[(x, y)] = c3r, c3g, c3b
-      
+
     png.output_png("surface/%08X_DXT3.png" % header_id, width, height, pixels)
 
 
 def image_0x35545844(header_id, width, height, data):
     pixels = {}
-    
+
     lngth = width * height
     for bb in range(lngth // 16):
         o = bb * 16
         # ignore alpha for now
         blk = map(ord, data[o + 8:o + 16])
-        
+
         c0 = blk[1] * 256 + blk[0]
         c1 = blk[3] * 256 + blk[2]
-        
+
         c0r, c0g, c0b = rgb565(c0)
         c1r, c1g, c1b = rgb565(c1)
-        
+
         c2r = (2 * c0r + 1 * c1r) // 3
         c2g = (2 * c0g + 1 * c1g) // 3
         c2b = (2 * c0b + 1 * c1b) // 3
         c3r = (1 * c0r + 2 * c1r) // 3
         c3g = (1 * c0g + 2 * c1g) // 3
         c3b = (1 * c0b + 2 * c1b) // 3
-        
+
         for i in range(4):
             for j in range(4):
                 b = blk[4 + i]
@@ -174,10 +174,10 @@ def image_0x35545844(header_id, width, height, data):
                     b2 = (b // 16) % 4
                 elif j == 3:
                     b2 = (b // 64) % 4
-                
+
                 x = (bb % (width // 4)) * 4 + j
                 y = (bb // (width // 4)) * 4 + i
-                
+
                 if b2 == 0:
                     pixels[(x, y)] = c0r, c0g, c0b
                 elif b2 == 1:
@@ -186,7 +186,7 @@ def image_0x35545844(header_id, width, height, data):
                     pixels[(x, y)] = c2r, c2g, c2b
                 elif b2 == 3:
                     pixels[(x, y)] = c3r, c3g, c3b
-    
+
     png.output_png("surface/%08X_DXT5.png" % header_id, width, height, pixels)
 
 
@@ -212,13 +212,13 @@ f = DatFile(filename)
 
 def dump_image_file(entry):
     j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
-    
+
     f.stream.seek(offset)
     j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
-    
+
     assert j == 0
     assert k == 0
-    
+
     if m == 0xDA78:
         assert unk1 % 0x100 == 0x03
         f.stream.seek(offset)
@@ -234,7 +234,7 @@ def dump_image_file(entry):
         header_id, unk1, width, height, unk2, lngth = struct.unpack("<LLLLLL", data[:24])
         assert lngth + 24 == size1
         content = data
-        
+
     print hex(file_id)
     if unk2 == 0x15:
         assert width * height * 4 == lngth

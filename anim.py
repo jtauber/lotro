@@ -16,15 +16,15 @@ f = DatFile(filename)
 def dump_anim_file(entry):
     j, unk1, file_id, offset, size1, timestamp, version, size2, unk2 = entry
     print "%08X %08X %08X %s %08X | %08X %08X %08X | %08X" % (file_id, offset, size1, time.ctime(timestamp), version, size2, unk1, unk2, size2 - size1)
-    
+
     f.stream.seek(offset)
-    
+
     j, k, l, m, n = struct.unpack("<LLLHH", f.stream.read(0x10))
     print "%08X %08X %08X %04X %04X" % (j, k, l, m, n)
-    
+
     assert j == 0
     assert k == 0
-    
+
     if m == 0xDA78:
         print "compressed"
         assert unk1 % 0x100 == 0x03
@@ -38,7 +38,7 @@ def dump_anim_file(entry):
         f.stream.seek(offset)
         data = f.stream.read(size1 + 0x08)[8:]
         content = data
-    
+
     dump(content[:0x100])
 
 
