@@ -102,13 +102,15 @@ def hillshade(cell, xres=1, yres=1, azimuth=315.0, altitude=45.0, z=1.0, scale=0
         for col in range(3):
             window.append(cell[row:(row + cell.shape[0] - 2), col:(col + cell.shape[1] - 2)])
 
-    x = ((z * window[0] + z * window[3] + z * window[3] + z * window[6]) \
-       - (z * window[2] + z * window[5] + z * window[5] + z * window[8])) \
-      / (8.0 * xres * scale)
+    x = (
+        (z * window[0] + z * window[3] + z * window[3] + z * window[6]) -
+        (z * window[2] + z * window[5] + z * window[5] + z * window[8])
+    ) / (8.0 * xres * scale)
 
-    y = ((z * window[6] + z * window[7] + z * window[7] + z * window[8]) \
-       - (z * window[0] + z * window[1] + z * window[1] + z * window[2])) \
-      / (8.0 * yres * scale)
+    y = (
+        (z * window[6] + z * window[7] + z * window[7] + z * window[8]) -
+        (z * window[0] + z * window[1] + z * window[1] + z * window[2])
+    ) / (8.0 * yres * scale)
 
     rad2deg = 180.0 / math.pi
 
@@ -116,9 +118,11 @@ def hillshade(cell, xres=1, yres=1, azimuth=315.0, altitude=45.0, z=1.0, scale=0
     aspect = arctan2(x, y)
     deg2rad = math.pi / 180.0
 
-    shaded = sin(altitude * deg2rad) * sin(slope * deg2rad) \
-           + cos(altitude * deg2rad) * cos(slope * deg2rad) \
-           * cos((azimuth - 90.0) * deg2rad - aspect)
+    shaded = (
+        sin(altitude * deg2rad) * sin(slope * deg2rad) +
+        cos(altitude * deg2rad) * cos(slope * deg2rad) *
+        cos((azimuth - 90.0) * deg2rad - aspect)
+    )
 
     shaded = shaded * 255
 
@@ -173,10 +177,11 @@ SIZE = 7682
 
 pixels = zeros((SIZE, SIZE, 3), dtype=uint8)
 
-for y in range(64, SIZE - 32):
-    for x in range(32, SIZE - 32):
 # for y in range(1000, 2000):
 #     for x in range(4500, 5500):
+
+for y in range(64, SIZE - 32):
+    for x in range(32, SIZE - 32):
         cy, py = divmod(y, 30)
         cx, px = divmod(x, 30)
         file_id = 0x80020000 + cy * 0x100 + cx

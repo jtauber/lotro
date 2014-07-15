@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 import struct
-import time
 import zlib
 
 from dat import DatFile
 import png
-from utils import dump
 
 
 filename = "LOTRO/client_local_English.dat"

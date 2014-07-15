@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import os.path
 import png
 import struct
 import zlib
 
 from dat import DatFile
+from utils import dump
 
 
 def rgb565(c):
